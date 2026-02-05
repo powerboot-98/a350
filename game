@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A350 Landing Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(#87ceeb, #cceeff);
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    #plane {
+      position: absolute;
+      bottom: 120px;
+      left: 160px;
+      width: 100px;
+      transition: 0.1s;
+    }
+
+    #runway {
+      position: absolute;
+      bottom: 0;
+      left: 120px;
+      width: 200px;
+      height: 100px;
+      background: #333;
+      display: none;
+    }
+
+    .line {
+      width: 10px;
+      height: 20px;
+      background: white;
+      margin: 10px auto;
+    }
+
+    .cloud {
+      position: absolute;
+      top: 0;
+      width: 60px;
+      height: 30px;
+      background: white;
+      border-radius: 20px;
+    }
+
+    #score, #mode {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+    }
+
+    #mode {
+      top: 35px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="score">Score: 0</div>
+<div id="mode">Mode: Cruise</div>
+
+<img id="plane" src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Airbus_A350_XWB.svg">
+
+<div id="runway">
+  <div class="line"></div>
+  <div class="line"></div>
+  <div class="line"></div>
+</div>
+
+<script>
+  const plane = document.getElementById("plane");
+  const runway = document.getElementById("runway");
+  const modeText = document.getElementById("mode");
+
+  let x = 160;
+  let y = 120;
+  let score = 0;
+  let landing = false;
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" && x > 0) x -= 20;
+    if (e.key === "ArrowRight" && x < 300) x += 20;
+
+    if (e.key === "l" || e.key === "L") {
+      landing = true;
+      runway.style.display = "block";
+      modeText.textContent = "Mode: Landing";
+    }
+
+    if (landing && e.code === "Space") {
+      y -= 10;
+    }
+
+    plane.style.left = x + "px";
+    plane.style.bottom = y + "px";
+  });
+
+  function createCloud() {
+    if (landing) return;
+
+    const cloud = document.createElement("div");
+    cloud.className = "cloud";
+    cloud.style.left = Math.random() * 340 + "px";
+    document.body.appendChild(cloud);
+
+    let yCloud = 0;
+    const fall = setInterval(() => {
+      yCloud += 5;
+      cloud.style.top = yCloud + "px";
+
+      if (
+        yCloud > window.innerHeight - 150 &&
+        Math.abs(cloud.offsetLeft - x) < 60
+      ) {
+        alert("Crashed! Score: " + score);
+        location.reload();
+      }
+
+      if (yCloud > window.innerHeight) {
+        cloud.remove();
+        clearInterval(fall);
+      }
+    }, 30);
+  }
+
+  function checkLanding() {
+    if (!landing) return;
+
+    if (y <= 10) {
+      if (x > 130 && x < 230) {
+        alert("Perfect Landing! 🛬 Score: " + score);
+      } else {
+        alert("Missed Runway 💥 Score: " + score);
+      }
+      location.reload();
+    }
+  }
+
+  setInterval(() => {
+    score++;
+    document.getElementById("score").textContent = "Score: " + score;
+    checkLanding();
+  }, 500);
+
+  setInterval(createCloud, 1000);
+</script>
+
+</body>
+</html>
